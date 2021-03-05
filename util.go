@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/binary"
 	"errors"
-	"github.com/decred/dcrd/dcrec/secp256k1/v3"
 	"math/big"
 	"math/rand"
 	"time"
@@ -14,24 +13,22 @@ import (
 func Inner_Proof(a []byte,b []*big.Int) *big.Int{
 	sum := big.NewInt(0)
 	for key,_ := range a {
-		mul := big.NewInt(1)
-		sum.Add(sum,mul.Mul(big.NewInt(int64(a[key])),b[key]))
+		sum = addInP(sum,mulInP(big.NewInt(int64(a[key])),b[key]))
 	}
-	return PutInP(sum,curve)
-	//return sum
+	//return PutInP(sum,curve)
+	//fmt.Println(sum)
+	return sum
 }
 
 //计算a,b两个向量的内积
 //a,b是两个*big.Int类型的数组
 func Inner_ProofBig(a []*big.Int,b []*big.Int) *big.Int {
 	sum := big.NewInt(0)
-
 	for key,_ := range a {
-		mul := big.NewInt(1)
-		sum.Add(sum,mul.Mul(a[key],b[key]))
+		sum = addInP(sum,mulInP(a[key],b[key]))
 	}
-
-	return PutInP(sum,curve)
+	//fmt.Println(sum)
+	return sum
 }
 
 
@@ -54,56 +51,61 @@ func CalHadamardVectorBig(a []*big.Int, b []*big.Int) []*big.Int {
 	var c []*big.Int
 
 	for key,_ := range a {
-		temp := big.NewInt(1)
-		c = append(c, PutInP(temp.Mul(a[key],b[key]),curve))
+		//temp := big.NewInt(1)
+		//c = append(c, PutInP(temp.Mul(a[key],b[key]),curve))
+		c = append(c, mulInP(a[key],b[key]))
 	}
 	return c
 }
 
 //计算两个向量的相加
 //a,b均是*big.Int数组
-func CalVectorAdd(a []*big.Int,b []*big.Int,curve *secp256k1.KoblitzCurve) []*big.Int {
+func CalVectorAdd(a []*big.Int,b []*big.Int) []*big.Int {
 	var c []*big.Int
 
 	for key,_ := range a {
-		temp := big.NewInt(0)
-		c = append(c,PutInP(temp.Add(a[key],b[key]),curve))
+		//temp := big.NewInt(0)
+		//c = append(c,PutInP(temp.Add(a[key],b[key]),curve))
+		c = append(c, addInP(a[key],b[key]))
 	}
 	return c
 }
 
 //计算两个向量的相加
 //a是*big.Int数组，b是byte数组
-func CalVectorAddByte(a []*big.Int, b []byte,curve *secp256k1.KoblitzCurve) []*big.Int {
+func CalVectorAddByte(a []*big.Int, b []byte) []*big.Int {
 	var c []*big.Int
 
 	for key,_ := range a {
-		temp := big.NewInt(0)
-		c = append(c, PutInP(temp.Add(a[key],big.NewInt(int64(b[key]))),curve))
+		//temp := big.NewInt(0)
+		//c = append(c, PutInP(temp.Add(a[key],big.NewInt(int64(b[key]))),curve))
+		c = append(c, addInP(a[key],big.NewInt(int64(b[key]))))
 	}
 	return c
 }
 
 //计算两个向量相减a-b
 //a是*big.Int数组，b是byte数组
-func CalVectorSubByte(a []*big.Int, b []byte,curve *secp256k1.KoblitzCurve) []*big.Int {
+func CalVectorSubByte(a []*big.Int, b []byte) []*big.Int {
 	var c []*big.Int
 
 	for key,_ := range a {
-		temp := big.NewInt(0)
-		c = append(c, PutInP(temp.Sub(a[key],big.NewInt(int64(b[key]))),curve))
+		//temp := big.NewInt(0)
+		//c = append(c, PutInP(temp.Sub(a[key],big.NewInt(int64(b[key]))),curve))
+		c = append(c, addInP(a[key],negByte(b[key])))
 	}
 	return c
 }
 
 //计算向量的倍乘b*a
 //b是系数，a是*big.Int数组
-func CalVectorTimes(a []*big.Int, b int64, curve *secp256k1.KoblitzCurve) []*big.Int {
+func CalVectorTimes(a []*big.Int, b int64) []*big.Int {
 	var c []*big.Int
 
 	for key, _ := range a {
-		temp := big.NewInt(0)
-		c = append(c, PutInP(temp.Mul(a[key],big.NewInt(b)),curve))
+		//temp := big.NewInt(0)
+		//c = append(c, PutInP(temp.Mul(a[key],big.NewInt(b)),curve))
+		c = append(c, mulInP(a[key],big.NewInt(b)))
 	}
 	return c
 }
@@ -137,14 +139,15 @@ func GenerateA_L(v *big.Int, n int64) ([]*big.Int,error) {
 func GenerateA_R(a_L []*big.Int)(a_R []*big.Int){
 
 	for _,value := range a_L{
-		sub := big.NewInt(0)
-		if value.Cmp(big.NewInt(0))>0 {
-			a_R = append(a_R,big.NewInt(0))
-		}else{
-			a_R = append(a_R,sub.Sub(curve.P,big.NewInt(1)))
-			//a_R = append(a_R,negByte(1))
-		}
+		//sub := big.NewInt(0)
+	//	if value.Cmp(big.NewInt(0))>0 {
+	//		a_R = append(a_R,big.NewInt(0))
+	//	}else{
+			//a_R = append(a_R,sub.Sub(curve.P,big.NewInt(1)))
+	//		a_R = append(a_R,negByte(1))
+	//	}
 		//a_R = append(a_R,PutInP(value.Sub(a_L[key], big.NewInt(1)),prover.curve))
+		a_R = append(a_R, addInP(value,negByte(1)))
 	}
 	return  a_R
 }
@@ -155,8 +158,9 @@ func GenerateY(y byte, n int64) []*big.Int {
 	var i int64 = 1
 	yVector = append(yVector, big.NewInt(1))
 	for ;i<n;i++ {
-		temp := big.NewInt(1)
-		yVector =append(yVector, PutInP(temp.Mul(yVector[i-1],big.NewInt(int64(y))),curve))
+		//temp := big.NewInt(1)
+		//yVector =append(yVector, PutInP(temp.Mul(yVector[i-1],big.NewInt(int64(y))),curve))
+		yVector = append(yVector, mulInP(yVector[i-1],big.NewInt(int64(y))))
 	}
 	return yVector
 }
@@ -174,7 +178,7 @@ func GenerateZ(z byte, n int64) []byte {
 func GenerateRandom() byte {
 	seed := time.Now().UnixNano()
 	rand.Seed(seed)
-	//return byte(0)
+	//return 1
 	return byte(rand.Intn(255))
 }
 
@@ -192,7 +196,8 @@ func GenerateS(n int64)[]*big.Int {
 	for i:=n;i>0;i-- {
 		seed := time.Now().UnixNano()
 		rand.Seed(seed+i)
-		s = append(s, big.NewInt(int64(rand.Intn(2))))
+		//s = append(s, big.NewInt(int64(rand.Intn(2))))
+		s = append(s, big.NewInt(1))
 	}
 	return s
 }

@@ -42,7 +42,7 @@ func (verifier *Verifier) New(G Point, H Point, GVector []Point, HVector []Point
 	verifier.HVector = HVector
 	verifier.n = n
 	verifier.curve = &curve
-	//verifier.y = 1
+	//verifier.y = 0
 	verifier.y = GenerateRandom()
 
 }
@@ -53,8 +53,8 @@ func (verifier *Verifier) GetAS(A Point, S Point) {
 }
 
 func (verifier *Verifier) GenerateYZ() {
-	//verifier.z = GenerateRandom()
-	verifier.z = 1
+	verifier.z = GenerateRandom()
+	//verifier.z = 0
 }
 
 func (verifier *Verifier) GetT(T1 Point, T2 Point) {
@@ -64,6 +64,7 @@ func (verifier *Verifier) GetT(T1 Point, T2 Point) {
 
 func (verifier *Verifier) GenerateX() {
 	verifier.x = GenerateRandomInt()
+	//verifier.x = 10000000000
 }
 
 func (verifier *Verifier) VerifyZKP() bool {
@@ -103,18 +104,17 @@ func (verifier *Verifier) calculateDelta() *big.Int {
 	z3 := big.NewInt(1)
 	yn := GenerateY(verifier.y, verifier.n)
 
-	z2.Mul(big.NewInt(int64(verifier.z)), big.NewInt(int64(verifier.z)))
-	z3.Mul(z2, big.NewInt(int64(verifier.z)))
+	z2 = mulInP(big.NewInt(int64(verifier.z)), big.NewInt(int64(verifier.z)))
+	z3 = mulInP(z2,big.NewInt(int64(verifier.z)))
+	z2 = addInP(big.NewInt(int64(verifier.z)),negBig(z2))
 
-	z2 = PutInP(z2.Sub(big.NewInt(int64(verifier.z)), z2),verifier.curve)
 	y1n := Inner_Proof(GenerateZ(1, verifier.n), yn)
-	z2 = PutInP(z2.Mul(z2, y1n),verifier.curve)
 
+	z2 = mulInP(z2, y1n)
 	y2nInner := Inner_Proof(GenerateZ(1, verifier.n), y2n)
-	z3.Mul(z3, y2nInner)
-
-	delta.Sub(z2, z3)
-	PutInP(delta,verifier.curve)
+	z3 = mulInP(z3,y2nInner)
+	delta = addInP(z2,negBig(z3))
+	//fmt.Println("delta",negBig(delta))
 	return delta
 }
 
@@ -126,7 +126,7 @@ func (verifier *Verifier) generateP() {
 	S := verifier.S
 	yn := GenerateY(verifier.y,verifier.n)
 	y2n := GenerateY(2,verifier.n)
-	vector := CalVectorAdd(CalVectorTimes(yn, int64(verifier.z), verifier.curve),CalVectorTimes(y2n,int64(verifier.z)*int64(verifier.z),verifier.curve),verifier.curve)
+	vector := CalVectorAdd(CalVectorTimes(yn, int64(verifier.z)),CalVectorTimes(y2n,int64(verifier.z)*int64(verifier.z)))
 	h1 := GenerateH1(verifier.HVector,verifier.y,verifier.n)
 	verifier.h1 = h1
 

@@ -11,7 +11,7 @@ var verifier Verifier
 
 func main(){
 
-	setup(100,10)
+	setup(20,5)
 	zkpConstruct()
 	zkp()
 	isInRange := zkpVerify()
@@ -69,26 +69,22 @@ func zkpVerify() bool{
 }
 
 func test() {
-	h1 := GenerateH1(verifier.HVector,2,10)
-	yn := GenerateY(2,10)
+	tx := negBig(big.NewInt(11))
+	taux := big.NewInt(0)
+	delta := negBig(big.NewInt(31))
+	x0 := negBig(big.NewInt(11))
+	x1 := big.NewInt(20)
+	x2 := negBig(big.NewInt(31))
 
-	commith1 := CommitSingleVector(h1,yn)
-	commith := CommitSingleVector(verifier.HVector,GenerateY(1,10))
+	commit2 := CommitSingle(prover.H,x0.Bytes())
+	commit3 := Commit(prover.H,prover.H,x1.Bytes(),x2.Bytes())
 
-	fmt.Println(IsEqual(commith1,commith))
 
-	commitZ := CommitSingle(verifier.H, big.NewInt(int64(verifier.z)).Bytes())
-	commitZ1 := CommitSingle(verifier.H, negByte(verifier.z).Bytes())
-	fmt.Println("z",verifier.z)
-	fmt.Println("-z",negByte(verifier.z))
-	fmt.Println(addInP(big.NewInt(int64(verifier.z)),negByte(verifier.z)))
-	fmt.Println(MultiCommit(commitZ,commitZ1).x)
-	fmt.Println(prover.lx)
-	fmt.Println(prover.rx)
+	V := Commit(prover.G,prover.H,big.NewInt(prover.v).Bytes(),big.NewInt(int64(prover.gamma)).Bytes())
+	commit0 := Commit(prover.G,prover.H,tx.Bytes(),taux.Bytes())
+	commit1:= Commit(V,prover.G,big.NewInt(1).Bytes(),delta.Bytes())
 
-	P := big.NewInt(0)
-	P.Sub(curve.P,big.NewInt(2))
-	fmt.Println(curve.P)
-	fmt.Println(addInP(P,big.NewInt(1)))
+	fmt.Println(IsEqual(commit0,commit1))
+	fmt.Println(IsEqual(commit2,commit3))
 
 }

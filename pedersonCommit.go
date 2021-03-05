@@ -124,6 +124,19 @@ func addInP(a *big.Int, b *big.Int) *big.Int {
 	return c
 }
 
+func mulInP(a *big.Int, b *big.Int) *big.Int {
+	var m,n secp256k1.ModNScalar
+	c := big.NewInt(0)
+
+	m.SetByteSlice(a.Bytes())
+	n.SetByteSlice(b.Bytes())
+
+	m.Mul(&n)
+	mbyte := m.Bytes()
+	c.SetBytes(mbyte[0:32])
+	return c
+}
+
 //对*big.Int类型的数字求逆元
 func inverseBig(a *big.Int) *big.Int {
 	var m secp256k1.ModNScalar
@@ -144,6 +157,17 @@ func negByte(a byte) *big.Int {
 	mbyte := m.Bytes()
 	b.SetBytes(mbyte[0:32])
 	return b
+}
+
+func negBig(a *big.Int) *big.Int {
+	var m secp256k1.ModNScalar
+	b := big.NewInt(0)
+	m.SetByteSlice(a.Bytes())
+	m.Negate()
+	mbyte := m.Bytes()
+	b.SetBytes(mbyte[0:32])
+	return b
+
 }
 
 func new() {
