@@ -11,12 +11,12 @@ var verifier Verifier
 
 func main(){
 
-	setup(20,5)
+	setup(100,10)
 	zkpConstruct()
 	zkp()
 	isInRange := zkpVerify()
 	fmt.Println(isInRange)
-	test()
+	//test()
 }
 
 func setup(v int64,n int64) {

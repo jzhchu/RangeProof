@@ -131,9 +131,9 @@ func (verifier *Verifier) generateP() {
 	verifier.h1 = h1
 
 	commitAS := Commit(A,S,big.NewInt(1).Bytes(),big.NewInt(int64(verifier.x)).Bytes())
-	commitZ := CommitSingle(verifier.G, negByte(verifier.z).Bytes())
+	//commitZ := CommitSingle(verifier.G, negByte(verifier.z).Bytes())
 	//todo
-	//commitZ := CommitSingleVector(verifier.GVector,negBig(verifier.z))
+	commitZ := CommitSingleVector(verifier.GVector,GeneratenegZVector(verifier.z,verifier.n))
 	commitPoly := CommitSingleVector(h1, vector)
 
 	verifier.P = MultiCommit(commitAS,MultiCommit(commitZ, commitPoly))

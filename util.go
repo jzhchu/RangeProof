@@ -178,16 +178,16 @@ func GenerateZ(z byte, n int64) []byte {
 func GenerateRandom() byte {
 	seed := time.Now().UnixNano()
 	rand.Seed(seed)
-	return 1
-	//return byte(rand.Intn(255))
+	//return 1
+	return byte(rand.Intn(255))
 }
 
 //生成随机数(int)
 func GenerateRandomInt() int {
 	seed := time.Now().UnixNano()
 	rand.Seed(seed)
-	return 0
-	//return rand.Int()
+	//return 0
+	return rand.Int()
 }
 
 //生成s_L和s_R随机序列
@@ -214,6 +214,13 @@ func GenerateH1 (H []Point, y byte, n int64) []Point {
 	return h1
 }
 
+func GeneratenegZVector(z byte, n int64) []*big.Int {
+	var zn []*big.Int
+	for i:=n;i>0;i-- {
+		zn = append(zn, negByte(z))
+	}
+	return zn
+}
 
 func GenerateYn1 (y byte, n int64) []*big.Int {
 	yn := GenerateY(y,n)
